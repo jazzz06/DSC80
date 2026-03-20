@@ -300,13 +300,7 @@ Under the null hypothesis, cooking-time group membership should not matter, so r
 
 The observed difference in mean ratings is relatively small in magnitude, but when compared to the permutation distribution, it is **extremely unlikely to occur by chance**.
 
-### Conclusion
-
-At the **0.05 significance level**, I **reject the null hypothesis**.
-
-This provides strong statistical evidence that **shorter-cook and longer-cook recipes do not come from the same distribution of average ratings**.
-
-Although the difference in average ratings is small (around 0.035), the large sample size makes this difference statistically significant.
+Therefore, at the **0.05 significance level**, I **reject the null hypothesis**. This provides strong statistical evidence that **shorter-cook and longer-cook recipes do not come from the same distribution of average ratings**. Although the difference in average ratings is small (around 0.035), the large sample size makes this difference statistically significant.
 
 ### Interpretation
 
@@ -315,3 +309,32 @@ This result suggests that cooking time is **associated** with recipe ratings. Ho
 There may be other factors (such as recipe complexity, ingredients, or cuisine type) that influence both cooking time and ratings.
 
 <iframe src="assets/step4_permutation_test.html" width="800" height="600" frameborder="0"></iframe>
+
+### Framing a Prediction Problem
+- Prediction Problem: In this project, I aim to predict the average rating (`avg_rating`) of a recipe, making this a regression problem since the response variable is continuous and ranges from 1 to 5. I chose to model the rating as a continuous outcome rather than converting it into categories, as this preserves more information and allows for more precise predictions.
+
+- Response Variable: The response variable is `avg_rating`, which represents the average user rating of a recipe. This is a meaningful target because it captures overall user satisfaction. From earlier exploratory data analysis, variables such as cooking time, number of ingredients, number of steps, and nutritional content showed relationships with ratings, suggesting they may be useful predictors.
+
+- Evaluation Metrics:
+To evaluate model performance, I use Root Mean Squared Error (RMSE) as the primary metric. RMSE is appropriate because it penalizes larger prediction errors more heavily, which is important when predicting values on a bounded scale like ratings (1–5).
+
+In addition, I report:
+- Mean Absolute Error (MAE) for an interpretable average prediction error  
+- R² (coefficient of determination) to measure how much variance in ratings is explained by the model  
+
+Using multiple metrics provides a more complete understanding of model performance.
+
+
+To ensure a realistic prediction setting, I restrict the model to use only features that are available at the time a recipe is created, before any users have rated it. This prevents data leakage and ensures the model reflects a real-world use case.
+
+The features used include:
+- Cooking time (`minutes`)
+- Number of steps (`n_steps`)
+- Number of ingredients (`n_ingredients`)
+- Nutritional attributes (e.g., calories, sugar, fat)
+- Recipe tags (e.g., `is_vegetarian`, `is_healthy`)
+- Submission metadata (e.g., `submitted_year`)
+
+I explicitly exclude variables such as number of ratings, reviews, or any post-publication feedback, since these would not be known at prediction time.
+
+This prediction framework allows us to estimate how well a recipe will be received based solely on its intrinsic characteristics, without relying on user feedback. Such a model could be useful for surfacing promising recipes early or assisting users in selecting high-quality recipes before ratings are available.
