@@ -67,25 +67,6 @@ And seeking answer to my research question intend to:
 provide insight into how time investment, complexity, and recipe features relate to user satisfaction.
  :contentReference[oaicite:0]{index=0}
 
-## Hypothesis
-
-Cooking time alone will have limited predictive power, but prediction performance will improve when recipe complexity, nutritional variables, and recipe category information are included. Additionally, the relationship between cooking time and rating is expected to be nonlinear, where extremely short or extremely long recipes may receive lower ratings compared to moderately time-intensive recipes.
-
----
-
-## Data Processing
-
-To prepare the data for modeling, a recipe-level response variable called `avg_rating` is constructed to represent the average rating of each recipe.
-
-Steps:
-
-1. Treat `rating = 0` as missing values  
-2. Group the interactions dataset by `recipe_id`  
-3. Compute the mean rating for each recipe  
-4. Merge these averages with the recipes dataset using recipe IDs  
-
----
-
 ## Variables Used
 
 ### Response Variable
@@ -100,11 +81,84 @@ Steps:
 - Nutrition variables (calories, fat, sugar, sodium, protein, etc.)  
 - Tag-based indicators (e.g., dessert, quick, healthy)  
 
-These variables help control for recipe complexity, nutritional profile, and recipe type so that the effect of cooking time can be evaluated more meaningfully.
+## Data Cleaning and Exploratory Data Analysis
+
+In this section, I cleaned the merged recipe dataset and explored the key variables used in the project. Since the goal is to predict `avg_rating` using cooking time and other recipe-level characteristics, the EDA focuses on the response variable `avg_rating`, the main predictor `minutes`, and additional control variables related to recipe complexity.
+
+### Data Cleaning
+
+I first replaced ratings of `0` with missing values because they do not represent valid user ratings. I then grouped the `interactions` dataset by `recipe_id` to compute `avg_rating`, the average rating for each recipe, and merged this result into the `RAW_recipes` dataset.
+
+Next, I parsed the `nutrition` column into separate numeric variables, converted `submitted` into a datetime variable, and engineered several useful features such as `submitted_year`, `log_minutes`, and indicator variables for selected tags like dessert and quick recipes. I also treated nonpositive cooking times as missing because those values are not valid for this analysis.
+
+To support grouped comparisons, I binned cooking times into categories: `0-15`, `16-30`, `31-60`, `61-120`, and `120+` minutes.
+
+### Univariate Analysis
+
+The first variable I examined was `minutes`, since cooking time is the main feature of interest in this project.
+
 <iframe
   src="assets/minutes_distribution.html"
   width="800"
   height="600"
   frameborder="0"
 ></iframe>
+
+The raw distribution of cooking time contains extreme outliers, which distort the graph and compress most observations into a small portion of the x-axis. To make the distribution interpretable, I restricted this visualization to recipes with cooking times of 300 minutes or less. Even after filtering for visualization, the distribution remains strongly right-skewed, showing that most recipes take a relatively short amount of time to prepare, while fewer recipes take much longer. This suggests that cooking time may be better represented on a transformed scale, which motivates the use of `log_minutes` later in the analysis.
+
+I also examined the distribution of the response variable, `avg_rating`.
+
+<iframe
+  src="assets/avg_rating_distribution.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+The distribution of `avg_rating` is concentrated near the high end of the rating scale, especially between 4 and 5. This indicates that most recipes in the dataset receive fairly positive ratings overall. Because the response variable has limited spread, it may be difficult for any model to strongly distinguish between recipes that are already rated highly. This is an important consideration for the later prediction task.
+
+### Bivariate Analysis
+
+To study the relationship between cooking time and rating, I first plotted `log_minutes` against `avg_rating`.
+
+<iframe
+  src="assets/log_minutes_vs_avg_rating.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+This plot shows only a weak association between cooking time and average rating. Although the fitted trend line suggests there may be some overall pattern, the points are widely dispersed, indicating that cooking time alone is not a strong predictor of recipe rating. This supports the idea that additional recipe-level features will likely be needed to improve prediction performance.
+
+I also compared rating distributions across cooking-time groups using a box plot.
+
+<iframe
+  src="assets/cook_time_bin_boxplot.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+While there are slight differences in the rating distributions across cooking-time categories, the overlap between groups is substantial. This again suggests that cooking time by itself does not explain much of the variation in ratings. Recipes with different preparation lengths appear to be rated on fairly similar scales, so a richer model with more predictors will likely be more appropriate.
+
+### Interesting Aggregates
+
+To summarize broader patterns, I grouped recipes by cooking-time bin and computed aggregate statistics such as average rating, average number of ingredients, and average number of steps.
+
+The grouped table showed that recipes with longer cooking times also tend to have more ingredients and more steps, suggesting that cooking time may partly reflect recipe complexity. This matters because any apparent relationship between cooking time and rating could be confounded by how complicated the recipe is.
+
+I also visualized the mean average rating in each cooking-time group.
+
+<iframe
+  src="assets/mean_rating_by_cook_time_bin.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
+
+This bar chart makes it easier to compare mean ratings across cooking-time groups. The differences between groups are fairly small, which reinforces the conclusion from the earlier plots: cooking time alone is not likely to strongly predict recipe ratings. Instead, it will be important to include other relevant recipe-level variables, such as number of ingredients, number of steps, and nutritional characteristics, in the final model.
+
+### EDA Summary
+
+Overall, the EDA suggests that cooking time has only a modest relationship with recipe rating. Cooking time is highly right-skewed, while average ratings are concentrated near higher values. Although grouped comparisons show some variation, the differences are relatively small. These results motivate building a prediction model that uses cooking time together with additional features rather than relying on cooking time alone.
 
