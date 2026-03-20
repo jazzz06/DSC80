@@ -87,11 +87,60 @@ In this section, I cleaned the merged recipe dataset and explored the key variab
 
 ### Data Cleaning
 
-I first replaced ratings of `0` with missing values because they do not represent valid user ratings. I then grouped the `interactions` dataset by `recipe_id` to compute `avg_rating`, the average rating for each recipe, and merged this result into the `RAW_recipes` dataset.
+Before conducting analysis, I cleaned and transformed the dataset to ensure that all variables used in the project were valid, interpretable, and appropriate for modeling.
 
-Next, I parsed the `nutrition` column into separate numeric variables, converted `submitted` into a datetime variable, and engineered several useful features such as `submitted_year`, `log_minutes`, and indicator variables for selected tags like dessert and quick recipes. I also treated nonpositive cooking times as missing because those values are not valid for this analysis.
+First, I addressed the `rating` column in the `interactions` dataset. In this dataset, ratings of `0` do not represent actual user ratings but instead indicate missing values. Therefore, I replaced all instances of `rating = 0` with `NaN` to avoid biasing the calculation of average ratings.
 
-To support grouped comparisons, I binned cooking times into categories: `0-15`, `16-30`, `31-60`, `61-120`, and `120+` minutes.
+Next, I constructed a recipe-level response variable, `avg_rating`, by grouping the interactions dataset by `recipe_id` and computing the mean of all non-missing ratings for each recipe. This produced a single average rating per recipe, which I then merged into the `RAW_recipes` dataset using the recipe identifiers (`id` and `recipe_id`). This step transformed the data from user-level interactions to a recipe-level dataset suitable for prediction.
+
+I then cleaned and engineered several features from the recipes dataset. The `nutrition` column, which stores values as a list, was parsed into separate numeric columns representing calories, total fat, sugar, sodium, protein, saturated fat, and carbohydrates. This allowed nutritional information to be used directly as model features.
+
+Additionally, I converted the `submitted` column into a datetime format and extracted the year of submission as a new variable, `submitted_year`, to capture potential temporal trends in ratings.
+
+To incorporate categorical information, I created indicator variables based on the `tags` column. For example, I constructed binary variables such as `is_dessert` and `is_quick` by checking whether those keywords appeared in the tag list. These features help capture differences in recipe type that may influence ratings.
+
+I also addressed issues in the `minutes` variable. Since cooking time must be positive, I treated all nonpositive values as missing. I observed that the distribution of cooking time was highly right-skewed, with some extreme outliers. To make this variable more suitable for analysis and modeling, I created a log-transformed version, `log_minutes`, which compresses large values and improves interpretability.
+
+Finally, I created a categorical version of cooking time by grouping recipes into bins (`0–15`, `16–30`, `31–60`, `61–120`, and `120+` minutes). This transformation is useful for aggregate comparisons and helps identify broader trends across different cooking-time groups.
+
+After these cleaning and feature engineering steps, I restricted the dataset to rows with non-missing values in key variables such as `minutes`, `avg_rating`, `n_steps`, and `n_ingredients`. The resulting cleaned dataset is used for all subsequent exploratory analysis and modeling.
+
+### Data Cleaning
+
+I began by cleaning and transforming the dataset to ensure that all variables were valid and suitable for analysis.
+
+First, I addressed the `rating` column in the `interactions` dataset. Ratings of `0` do not represent valid user ratings but instead indicate missing values, so I replaced them with `NaN`. I then grouped the dataset by `recipe_id` to compute the average rating (`avg_rating`) for each recipe and merged this information into the recipes dataset.
+
+Next, I processed the `nutrition` column by extracting individual nutritional components such as calories and sugar into separate columns. I also converted the `submitted` column into a datetime variable and created a `submitted_year` feature.
+
+To capture categorical information, I created indicator variables from the `tags` column, such as `is_dessert` and `is_quick`. Additionally, I cleaned the `minutes` variable by treating nonpositive values as missing and created a log-transformed version, `log_minutes`, to address skewness.
+
+Finally, I created cooking-time bins (`0–15`, `16–30`, `31–60`, `61–120`, `120+`) to support grouped analysis. After cleaning, I restricted the dataset to rows with non-missing values in key variables, resulting in a dataset with **81,172 observations and 31 columns**.
+
+---
+
+### Cleaned Dataset Preview
+
+| name                                   | minutes | log_minutes | avg_rating | n_steps | n_ingredients | cook_time_bin |
+|----------------------------------------|--------|-------------|-----------|--------|--------------|--------------|
+| 1 brownies in the world best ever      | 40.0   | 3.71        | 4.0       | 10     | 9            | 31-60        |
+| 1 in canada chocolate chip cookies     | 45.0   | 3.83        | 5.0       | 12     | 11           | 31-60        |
+| 412 broccoli casserole                 | 40.0   | 3.71        | 5.0       | 6      | 9            | 31-60        |
+| millionaire pound cake                 | 120.0  | 4.80        | 5.0       | 7      | 7            | 61-120       |
+| 2000 meatloaf                          | 90.0   | 4.51        | 5.0       | 17     | 13           | 61-120       |
+
+
+### Missing Values
+
+| Column          | Missing Count | Missing Proportion |
+|----------------|--------------|--------------------|
+| minutes        | 0            | 0.0                |
+| avg_rating     | 0            | 0.0                |
+| n_steps        | 0            | 0.0                |
+| n_ingredients  | 0            | 0.0                |
+| calories       | 0            | 0.0                |
+| sugar          | 0            | 0.0                |
+
 
 ### Univariate Analysis
 
