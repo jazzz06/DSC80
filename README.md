@@ -259,10 +259,6 @@ The distributions of `is_quick` are nearly identical between missing and observe
 
 Because the p-value is greater than 0.05, we fail to reject the null hypothesis. There is no strong evidence that the missingness of `avg_rating` depends on `is_quick`.
 
----
-
-### Conclusion
-
 Overall, the missingness of `avg_rating` is **not completely random**. The permutation tests show that it depends on at least one observed variable (`n_steps`), but not on others (`is_quick`). 
 
 This suggests that the missingness mechanism is likely **MAR rather than MCAR**, meaning that whether a recipe receives ratings is related to observable characteristics such as recipe complexity. This is important for later modeling, as it implies that missing ratings are systematically associated with certain types of recipes rather than occurring purely at random.
