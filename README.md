@@ -201,3 +201,69 @@ This bar chart makes it easier to compare mean ratings across cooking-time group
 
 Overall, the EDA suggests that cooking time has only a modest relationship with recipe rating. Cooking time is highly right-skewed, while average ratings are concentrated near higher values. Although grouped comparisons show some variation, the differences are relatively small. These results motivate building a prediction model that uses cooking time together with additional features rather than relying on cooking time alone.
 
+## Assessment of Missingness
+
+Looking at the cleaned dataset, there are still three columns contain missing values:
+
+- `avg_rating`: ~3.11% missing  
+- `recipe_id_count`: ~3.11% missing  
+- `description`: ~0.084% missing  
+
+Since `avg_rating` is the response variable for this project, understanding its missingness is especially important.
+
+---
+
+### MNAR Analysis
+
+A plausible **MNAR** column in this dataset is `description`. Because `description` is written by the recipe contributor, whether it is missing may depend on unobserved factors such as how much effort the contributor wants to put into the recipe, how confident they feel about it, or whether they believe additional explanation is necessary. These factors are not fully captured in the dataset.
+
+Additional data that could help explain this missingness (and potentially make it MAR) would include contributor-level information such as experience level, engagement history, or whether Food.com prompted users to include a description during submission.
+
+---
+
+### Missingness Dependency (Permutation Tests)
+
+I conducted permutation tests to determine whether the missingness of `avg_rating` depends on other observed variables.
+
+- **Null hypothesis:** Missingness of `avg_rating` does not depend on column X  
+- **Alternative hypothesis:** Missingness of `avg_rating` does depend on column X  
+- **Test statistic:** Absolute difference in mean of column X between missing vs observed groups  
+
+---
+
+### Column Where Missingness Depends on It: `n_steps`
+
+- Observed test statistic: **1.4930**  
+- p-value: **0.0000**
+
+<iframe src="assets/missingness_n_steps_distribution.html" width="800" height="600" frameborder="0"></iframe>
+
+The distribution of `n_steps` differs noticeably between recipes with missing and observed `avg_rating`. Recipes with missing ratings tend to have a slightly different spread of number of steps.
+
+<iframe src="assets/missingness_n_steps_null.html" width="800" height="600" frameborder="0"></iframe>
+
+Because the p-value is less than 0.05, we reject the null hypothesis. This provides strong evidence that the missingness of `avg_rating` **depends on `n_steps`**.
+
+---
+
+### Column Where Missingness Does Not Depend on It: `is_quick`
+
+- Observed test statistic: **0.0022**  
+- p-value: **0.4390**
+
+<iframe src="assets/missingness_is_quick_distribution.html" width="800" height="600" frameborder="0"></iframe>
+
+The distributions of `is_quick` are nearly identical between missing and observed groups, indicating little to no relationship.
+
+<iframe src="assets/missingness_is_quick_null.html" width="800" height="600" frameborder="0"></iframe>
+
+Because the p-value is greater than 0.05, we fail to reject the null hypothesis. There is no strong evidence that the missingness of `avg_rating` depends on `is_quick`.
+
+---
+
+### Conclusion
+
+Overall, the missingness of `avg_rating` is **not completely random**. The permutation tests show that it depends on at least one observed variable (`n_steps`), but not on others (`is_quick`). 
+
+This suggests that the missingness mechanism is likely **MAR rather than MCAR**, meaning that whether a recipe receives ratings is related to observable characteristics such as recipe complexity. This is important for later modeling, as it implies that missing ratings are systematically associated with certain types of recipes rather than occurring purely at random.
+
