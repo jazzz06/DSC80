@@ -101,4 +101,10 @@ Steps:
 - Tag-based indicators (e.g., dessert, quick, healthy)  
 
 These variables help control for recipe complexity, nutritional profile, and recipe type so that the effect of cooking time can be evaluated more meaningfully.
+<iframe
+  src="assets/minutes_distribution.html"
+  width="800"
+  height="600"
+  frameborder="0"
+></iframe>
 
