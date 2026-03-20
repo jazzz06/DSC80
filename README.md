@@ -391,5 +391,34 @@ The most important features in the final model include: `steps_per_ingredient` (
 Notably, two of the engineered features (`steps_per_ingredient` and `calories_per_ingredient`) are among the most important predictors. This indicates that capturing recipe complexity and nutritional density improves the model’s ability to predict ratings.
 Overall, the final model improves upon the baseline by incorporating more informative features and using a model capable of capturing nonlinear relationships. Although the improvements in metrics are modest, they are consistent and supported by meaningful feature engineering, demonstrating a better representation of how users evaluate recipes.
 
+---
+## Fairness Analysis
 
+At last, I evaluate whether the final model performs equally well across different groups of recipes. Specifically, I investigate whether the model performs worse for **dessert recipes** compared to **non-dessert recipes**.
+- **Group X:** Dessert recipes  
+- **Group Y:** Non-dessert recipes  
+Since the problem is a **regression problem** (predicting average rating), I use **Root Mean Squared Error (RMSE)** to evaluate model performance. RMSE measures the average magnitude of prediction error, where lower values indicate better performance.
+- **Null Hypothesis (H₀):**  
+  The model is fair. The RMSE for dessert and non-dessert recipes is the same, and any observed difference is due to random chance.
+- **Alternative Hypothesis (H₁):**  
+  The model is unfair. The RMSE for dessert recipes is **higher** than for non-dessert recipes.
+
+### Observed Results
+
+| Group         | Number of Recipes | RMSE |
+|--------------|------------------|------|
+| Dessert       | 2499             | 0.76 |
+| Non-dessert   | 13736            | 0.61 |
+
+- **Observed test statistic:**  
+  RMSE(Dessert) − RMSE(Non-dessert) = **0.1550**
+I then performed a permutation test with 2000 permutations to determine whether the observed difference in RMSE could have occurred by chance.
+**p-value:** 0.000000
+**Significance level (α):** 0.05  
+Since the p-value is **much smaller than 0.05**, we **reject the null hypothesis**.
+There is strong statistical evidence that the model performs worse for **dessert recipes** than for **non-dessert recipes**. This suggests that the model is **not fair with respect to dessert status**, and that prediction errors are systematically larger for dessert recipes.
+This result indicates a potential bias in the model. Dessert recipes may have characteristics (e.g., higher sugar content, more variability in ratings, or more complex patterns) that the model does not capture as effectively as it does for non-dessert recipes.
+As a result, predictions for dessert recipes are less accurate, which could lead to systematically worse recommendations or insights for this group. For future improvements to model, this would be a good thing to keep in mind and maybe adjust to avoid.
+
+<iframe src="assets/fairness_permutation_test.html" width="100%" height="500px"></iframe>
 
