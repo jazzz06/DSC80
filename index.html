@@ -26,55 +26,6 @@
 
   <body>
     <h1>DSC 80 Project 04: How Does Cooking Time Affect Recipe Ratings</h1>
-
-    <div class="box">
-      <h2>Introduction</h2>
-
-      <h3>Dataset Overview</h3>
-      <p>
-        This project uses the <strong>Recipes and Ratings</strong> dataset, which includes two CSV files:
-      </p>
-      <ul>
-        <li><strong>RAW_recipes.csv</strong>: 83,782 rows (one row per recipe)</li>
-        <li><strong>interactions.csv</strong>: 731,927 rows (one row per user–recipe interaction, including ratings and reviews)</li>
-      </ul>
-      <p>
-        The dataset is useful for understanding what recipe characteristics (like cooking time, complexity,
-        or nutrition) are associated with higher user ratings.
-      </p>
-
-      <h3>Research Question</h3>
-      <p>
-        <strong>What is the relationship between cooking time (<code>minutes</code>) and the average rating
-        (<code>avg_rating</code>) of a recipe?</strong>
-      </p>
-      <p>
-        This question matters because cooking time affects how practical a recipe is for different users.
-        If longer recipes tend to be rated higher (or lower), that insight can help people choose recipes
-        and help recipe writers design recipes that are both feasible and well-received.
-      </p>
-
-      <h3>Relevant Columns</h3>
-      <p><strong>From RAW_recipes.csv:</strong></p>
-      <ul>
-        <li><code>id</code>: unique recipe identifier (used to merge with interactions)</li>
-        <li><code>name</code>: recipe name (useful for interpretation / hover text)</li>
-        <li><code>minutes</code>: total cooking time in minutes (main feature)</li>
-      </ul>
-
-      <p><strong>From interactions.csv:</strong></p>
-      <ul>
-        <li><code>recipe_id</code>: recipe identifier (matches <code>id</code>)</li>
-        <li><code>rating</code>: user rating (we will treat <code>rating = 0</code> as missing)</li>
-      </ul>
-
-      <h3>Derived Column</h3>
-      <p>
-        To connect cook time to ratings, I will create <code>avg_rating</code>: the mean rating for each recipe,
-        computed by grouping <code>interactions.csv</code> by <code>recipe_id</code> (after replacing
-        <code>rating == 0</code> with missing values), then merging onto <code>RAW_recipes.csv</code>.
-      </p>
-    </div>
   </body>
   <section>
   <h1>Overview</h1>
