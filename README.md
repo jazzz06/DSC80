@@ -103,19 +103,7 @@ I also addressed issues in the `minutes` variable. Since cooking time must be po
 
 Finally, I created a categorical version of cooking time by grouping recipes into bins (`0–15`, `16–30`, `31–60`, `61–120`, and `120+` minutes). This transformation is useful for aggregate comparisons and helps identify broader trends across different cooking-time groups.
 
-After these cleaning and feature engineering steps, I restricted the dataset to rows with non-missing values in key variables such as `minutes`, `avg_rating`, `n_steps`, and `n_ingredients`. The resulting cleaned dataset is used for all subsequent exploratory analysis and modeling.
-
-### Data Cleaning
-
-I began by cleaning and transforming the dataset to ensure that all variables were valid and suitable for analysis.
-
-First, I addressed the `rating` column in the `interactions` dataset. Ratings of `0` do not represent valid user ratings but instead indicate missing values, so I replaced them with `NaN`. I then grouped the dataset by `recipe_id` to compute the average rating (`avg_rating`) for each recipe and merged this information into the recipes dataset.
-
-Next, I processed the `nutrition` column by extracting individual nutritional components such as calories and sugar into separate columns. I also converted the `submitted` column into a datetime variable and created a `submitted_year` feature.
-
-To capture categorical information, I created indicator variables from the `tags` column, such as `is_dessert` and `is_quick`. Additionally, I cleaned the `minutes` variable by treating nonpositive values as missing and created a log-transformed version, `log_minutes`, to address skewness.
-
-Finally, I created cooking-time bins (`0–15`, `16–30`, `31–60`, `61–120`, `120+`) to support grouped analysis. After cleaning, I restricted the dataset to rows with non-missing values in key variables, resulting in a dataset with **81,172 observations and 31 columns**.
+After these cleaning and feature engineering steps, I restricted the dataset to rows with non-missing values in key variables such as `minutes`, `avg_rating`, `n_steps`, and `n_ingredients`. The resulting cleaned dataset is used for all subsequent exploratory analysis and modeling. Resulting dataset: **81,172 observations and 31 columns**.
 
 ---
 
@@ -130,6 +118,20 @@ Finally, I created cooking-time bins (`0–15`, `16–30`, `31–60`, `61–120`
 | 2000 meatloaf                          | 90.0   | 4.51        | 5.0       | 17     | 13           | 61-120       |
 
 
+### Summary Statistics
+
+| Statistic | minutes | avg_rating | n_steps | n_ingredients |
+|----------|--------|-----------|--------|--------------|
+| count    | 81,172 | 81,172    | 81,172 | 81,172       |
+| mean     | 111.0  | 4.63      | 10.06  | 9.21         |
+| std      | 4020   | 0.64      | 6.33   | 3.82         |
+| 50%      | 35.0   | 5.0       | 9.0    | 9.0          |
+| 75%      | 60.0   | 5.0       | 13.0   | 12.0         |
+| 95%      | 250.0  | —         | —      | —            |
+| 99%      | 724.0  | —         | —      | —            |
+| max      | 1,050,000 | —      | —      | —            |
+
+
 ### Missing Values
 
 | Column          | Missing Count | Missing Proportion |
@@ -142,61 +144,49 @@ Finally, I created cooking-time bins (`0–15`, `16–30`, `31–60`, `61–120`
 | sugar          | 0            | 0.0                |
 
 
+The summary statistics reveal that cooking time (`minutes`) has a mean of approximately 111 minutes but a much lower median (35 minutes), indicating a highly right-skewed distribution with extreme outliers. The maximum value exceeds 1,000,000 minutes, confirming the presence of unrealistic values.
+
+The average rating (`avg_rating`) is around 4.63 and is concentrated near the upper end of the rating scale. This suggests that most recipes receive positive ratings, resulting in limited variability in the response variable.
+
+---
+
 ### Univariate Analysis
 
-The first variable I examined was `minutes`, since cooking time is the main feature of interest in this project.
+To better understand the distribution of cooking time, I plotted a histogram after restricting the data to recipes with cooking times of 300 minutes or less.
 
-<iframe
-  src="assets/minutes_distribution.html"
-  width="800"
-  height="600"
-  frameborder="0"
-></iframe>
+<iframe src="assets/minutes_distribution.html" width="800" height="600" frameborder="0"></iframe>
 
-The raw distribution of cooking time contains extreme outliers, which distort the graph and compress most observations into a small portion of the x-axis. To make the distribution interpretable, I restricted this visualization to recipes with cooking times of 300 minutes or less. Even after filtering for visualization, the distribution remains strongly right-skewed, showing that most recipes take a relatively short amount of time to prepare, while fewer recipes take much longer. This suggests that cooking time may be better represented on a transformed scale, which motivates the use of `log_minutes` later in the analysis.
+The distribution is strongly right-skewed, with most recipes taking between 0 and 60 minutes and progressively fewer recipes requiring longer cooking times. The need to filter extreme values highlights the presence of outliers, and the skewed shape motivates the use of a log transformation for modeling.
 
 I also examined the distribution of the response variable, `avg_rating`.
 
-<iframe
-  src="assets/avg_rating_distribution.html"
-  width="800"
-  height="600"
-  frameborder="0"
-></iframe>
+<iframe src="assets/avg_rating_distribution.html" width="800" height="600" frameborder="0"></iframe>
 
-The distribution of `avg_rating` is concentrated near the high end of the rating scale, especially between 4 and 5. This indicates that most recipes in the dataset receive fairly positive ratings overall. Because the response variable has limited spread, it may be difficult for any model to strongly distinguish between recipes that are already rated highly. This is an important consideration for the later prediction task.
+The distribution of `avg_rating` is heavily concentrated near 4–5, indicating that most recipes receive high ratings. This limited spread suggests that distinguishing between recipes based on rating alone may be challenging.
+
+---
 
 ### Bivariate Analysis
 
-To study the relationship between cooking time and rating, I first plotted `log_minutes` against `avg_rating`.
+To explore the relationship between cooking time and rating, I plotted `log_minutes` against `avg_rating`.
 
-<iframe
-  src="assets/log_minutes_vs_avg_rating.html"
-  width="800"
-  height="600"
-  frameborder="0"
-></iframe>
+<iframe src="assets/log_minutes_vs_avg_rating.html" width="800" height="600" frameborder="0"></iframe>
 
-This plot shows only a weak association between cooking time and average rating. Although the fitted trend line suggests there may be some overall pattern, the points are widely dispersed, indicating that cooking time alone is not a strong predictor of recipe rating. This supports the idea that additional recipe-level features will likely be needed to improve prediction performance.
+The plot shows a very weak relationship between cooking time and average rating. Although there is a slight negative trend, the points are widely dispersed, indicating that cooking time alone does not strongly predict recipe ratings.
 
-I also compared rating distributions across cooking-time groups using a box plot.
+I also compared rating distributions across cooking-time bins.
 
-<iframe
-  src="assets/cook_time_bin_boxplot.html"
-  width="800"
-  height="600"
-  frameborder="0"
-></iframe>
+<iframe src="assets/cook_time_bin_boxplot.html" width="800" height="600" frameborder="0"></iframe>
 
-While there are slight differences in the rating distributions across cooking-time categories, the overlap between groups is substantial. This again suggests that cooking time by itself does not explain much of the variation in ratings. Recipes with different preparation lengths appear to be rated on fairly similar scales, so a richer model with more predictors will likely be more appropriate.
+The boxplot shows that ratings are consistently high across all cooking-time groups, with substantial overlap between categories. This further suggests that cooking time is not a strong standalone predictor.
+
+---
 
 ### Interesting Aggregates
 
+To summarize patterns across groups, I computed aggregate statistics by cooking-time bin.
+
 To summarize broader patterns, I grouped recipes by cooking-time bin and computed aggregate statistics such as average rating, average number of ingredients, and average number of steps.
-
-The grouped table showed that recipes with longer cooking times also tend to have more ingredients and more steps, suggesting that cooking time may partly reflect recipe complexity. This matters because any apparent relationship between cooking time and rating could be confounded by how complicated the recipe is.
-
-I also visualized the mean average rating in each cooking-time group.
 
 <iframe
   src="assets/mean_rating_by_cook_time_bin.html"
