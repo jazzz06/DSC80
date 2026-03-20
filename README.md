@@ -345,3 +345,51 @@ For comparison, a **dummy model** that always predicts the average rating achiev
 - **R²:** 0.0000  
 
 These results show that the baseline model performs **only slightly better than predicting the mean rating**. The very low R² value indicates that the model explains almost none of the variation in recipe ratings. This suggests that the features used (`minutes`, `n_ingredients`, and `is_dessert`) are **not strong predictors** of recipe ratings on their own. While they capture basic characteristics of recipes, they do not reflect more complex factors that influence user preferences. Overall, this baseline model is **not very strong**, but it provides a useful starting point. In the next step, we will build a more advanced model using additional features to improve predictive performance.
+
+---
+## Final Model
+
+For the final model, I improved upon my baseline model by incorporating additional engineered features and using a more flexible modeling algorithm. In addition to the baseline features (`minutes`, `n_ingredients`, `is_dessert`), I introduced several new features designed to better capture recipe complexity, nutritional structure, and nonlinear relationships.
+
+#### `log_minutes`
+The `minutes` feature is highly right-skewed, with some recipes taking significantly longer than others. We applied a log transformation (`log_minutes = log(1 + minutes)`) to reduce the influence of extreme values. This allows the model to better distinguish between shorter and moderately long recipes, which is more aligned with how users perceive cooking time.
+#### `steps_per_ingredient`
+This feature is defined as: steps_per_ingredient = n_steps / n_ingredients
+It captures the procedural complexity of a recipe. Recipes with more steps per ingredient are generally more complex and time-consuming, which may negatively impact user ratings.
+#### `calories_per_ingredient`
+This feature is defined as: calories_per_ingredient = calories / n_ingredients
+It measures how dense or rich a recipe is at the ingredient level. Recipes with higher calorie density may be perceived as heavier or less healthy, which could influence ratings.
+#### `is_long_recipe`
+This binary feature indicates whether a recipe takes longer than the median cooking time: is_long_recipe = 1 if minutes >= median(minutes) else 0
+This allows the model to capture threshold effects, where very long recipes may be rated differently than typical recipes.
+
+For the final model, I used a **Random Forest Regressor**. This model was chosen because it can capture nonlinear relationships and interactions between features, which are likely present in recipe data. Unlike linear regression, it does not assume a strictly linear relationship between predictors and the response. I used **GridSearchCV** to tune the hyperparameters `n_estimators`, `max_depth`, and `min_samples_split`, as these directly control model complexity and help balance bias and variance. To keep runtime reasonable while still performing a meaningful search, we evaluated 8 combinations of hyperparameters using 3-fold cross-validation. Elsewise, runtime will exceed 15 minutes most time for this model, which makes it hard to be executable; Therefore, I switched up to a 8 combination hyperparameter version that reduces the runtime to be at most around 6-7 minutes.
+The best-performing hyperparameters were:
+- `n_estimators = 150`
+- `max_depth = 10`
+- `min_samples_split = 10`
+
+### Model Performance
+#### Cross-Validation Performance
+
+| Metric | Value |
+|--------|------|
+| RMSE   | 0.64 |
+| MAE    | 0.46 |
+| R²     | 0.0065 |
+#### Test Set Performance
+
+| Metric | Baseline | Final Model |
+|--------|----------|-------------|
+| RMSE   | 0.64     | 0.63        |
+| MAE    | 0.47     | 0.46        |
+| R²     | 0.0013   | 0.0075      |
+
+The final model shows a **modest but consistent improvement** over the baseline: RMSE decreased from **0.64 → 0.63**, MAE decreased from **0.47 → 0.46**, R² increased from **0.0013 → 0.0075**
+While the improvements are small, they are consistent across all evaluation metrics. This suggests that the engineered features and nonlinear modeling approach provide additional predictive signal beyond the baseline.
+The most important features in the final model include: `steps_per_ingredient` (0.10), `calories_per_ingredient` (0.10), `sugar` (0.09), `n_steps` (0.05), `n_ingredients` (0.04)
+Notably, two of the engineered features (`steps_per_ingredient` and `calories_per_ingredient`) are among the most important predictors. This indicates that capturing recipe complexity and nutritional density improves the model’s ability to predict ratings.
+Overall, the final model improves upon the baseline by incorporating more informative features and using a model capable of capturing nonlinear relationships. Although the improvements in metrics are modest, they are consistent and supported by meaningful feature engineering, demonstrating a better representation of how users evaluate recipes.
+
+
+
